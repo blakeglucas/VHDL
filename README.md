@@ -1,6 +1,6 @@
 # VHDL
 
-Various VHDL libraries and utilities I've written. All examples are specific to the NandLand GO Board (<https://www.nandland.com/goboard/index.html>), but the libraries should work across all FPGA's, depending on your synthesis tool.
+Various VHDL libraries and utilities I've written. All examples are specific to the NandLand GO Board (<https://www.nandland.com/goboard/index.html>), but the libraries should work for most FPGA's, depending on synthesis tool.
 
 ## Contents
 
@@ -32,7 +32,7 @@ The following are included in the repository:
 
 ## Testing/Simulating
 
-All libraries have been tested with GHDL (<http://ghdl.free.fr/>) and GTKWave (<http://gtkwave.sourceforge.net/>). A `test.sh` script is included in each file that will automatically analyze, emulate, and run tests for each library, if GHDL is installed an on the PATH. VHDL 2008 standard should be specified.
+All libraries have been tested with GHDL (<http://ghdl.free.fr/>) and GTKWave (<http://gtkwave.sourceforge.net/>). A `test.sh` script is included in each folder that will automatically analyze, emulate, and run tests for each library, if GHDL is installed an on the PATH. VHDL 2008 standard should be specified.
 
 ## License
 
