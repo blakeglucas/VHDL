@@ -7,14 +7,13 @@ entity I2C_Master is
 		clk: in std_logic;
         sda: inout std_logic;
         scl: out std_logic;
-        -- 0 is write
         tx_data: in i2c_data_buf_t;
         rx_data: out i2c_data_buf_t;
         tx_bytes: in integer;
         rx_bytes: in integer;
         idle: out std_logic := '1';
         start: in std_logic
-    );
+    );    
 end I2C_Master;
 
 architecture RTL of I2C_Master is
@@ -27,7 +26,6 @@ architecture RTL of I2C_Master is
     constant clk_ticks: integer := 125;
     signal tick_count: integer := 0;
     signal index: integer := 0;
-    signal addr: std_logic_vector(7 downto 0) := (others => '0');
     signal rw: std_logic := '0';
 begin
 	scl_gen: process(clk) is
@@ -61,11 +59,9 @@ begin
                     end if;
                 when SDA_START =>
                     if scl_state = '0' and start_set = '0' then
-                        -- Change for simulation?
-                        -- sda_buf <= '1';
-                        sda_buf <= 'Z';
+                        sda_buf <= '1';
                     end if;
-                    if tick_count = h_clk_ticks then
+                    if tick_count = 3 * clk_ticks / 4 then
                         if scl_state = '1' then
                             -- SET START BIT
                             sda_buf <= '0';
@@ -98,11 +94,9 @@ begin
                         end if;
                     end if;
                     if scl_state = '0' then
-                        if tick_count = h_clk_ticks then
-                            if index >= 8 then
-                                did_nack <= 'U';
-                                sda_state <= SDA_ACK;
-                            end if;
+                        if index >= 8 then
+                            did_nack <= 'U';
+                            sda_state <= SDA_ACK;
                         end if;
                         if tick_count = 0 then
                             if index < 8 then
@@ -116,12 +110,9 @@ begin
                             rx_data(rx_count)(7-index) <= sda;
                             index <= index + 1;
                         end if;
-                    -- elsif sda = 'Z' then **STUCK IN READ** but needed for simulation
-                    else
-                        -- TODO Verify that it still works in hardware.
-                        if (sda = '1' and index > 8) or sda = 'Z' then
-                            sda_state <= SDA_ACK;
-                        end if;
+                    -- elsif sda = 'Z' then **STUCK IN READ** (for simulation)
+                    elsif sda = '1' then
+                        sda_state <= SDA_ACK;
                     end if;
                 when SDA_ACK =>
                     if rw = '0' or addr_bit = '1' then
@@ -171,9 +162,9 @@ begin
                         end if;
                     end if;
                 when SDA_STOP =>
-                    if tick_count = 0 and scl_state = '0' then
+                    if tick_count = 3 * clk_ticks / 4 and scl_state = '1' then
                         sda_state <= SDA_IDLE;
-                    elsif tick_count >= h_clk_ticks and scl_state = '1' then
+                    elsif tick_count >= clk_ticks / 4 and scl_state = '1' then
                         sda_buf <= 'Z';
                     else
                         sda_buf <= '0';
