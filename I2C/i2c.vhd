@@ -3,8 +3,8 @@ use IEEE.std_logic_1164.all;
 use work.types.all;
 
 entity I2C_Master is
-	port(
-		clk: in std_logic;
+    port(
+        clk: in std_logic;
         sda: inout std_logic;
         scl: out std_logic;
         tx_data: in i2c_data_buf_t;
@@ -17,9 +17,9 @@ entity I2C_Master is
 end I2C_Master;
 
 architecture RTL of I2C_Master is
-	type sda_state_t is (SDA_IDLE, SDA_START, SDA_WRITE, SDA_READ, SDA_ACK, SDA_STOP);
+    type sda_state_t is (SDA_IDLE, SDA_START, SDA_WRITE, SDA_READ, SDA_ACK, SDA_STOP);
     signal sda_state: sda_state_t := SDA_IDLE;
-	signal scl_state: std_logic := '1';
+    signal scl_state: std_logic := '1';
     signal sda_buf: std_logic := 'Z';
     signal did_nack: std_logic := 'U';
     -- (25M/100k)/2 (up and down)
@@ -31,9 +31,9 @@ begin
 	scl_gen: process(clk) is
 	begin
     	if rising_edge(clk) then
-        	tick_count <= tick_count + 1;
-        	if tick_count >= clk_ticks then
-            	scl_state <= not scl_state;
+            tick_count <= tick_count + 1;
+            if tick_count >= clk_ticks then
+                scl_state <= not scl_state;
                 tick_count <= 0;
             end if;
         end if;
@@ -175,7 +175,7 @@ begin
         end if;
     end process;
     sda <=  sda_buf when sda_state = SDA_START else
-    		sda_buf when sda_state = SDA_WRITE else
+            sda_buf when sda_state = SDA_WRITE else
             'Z' when sda_state = SDA_READ else
             sda_buf when sda_state = SDA_ACK else
             sda_buf when sda_state = SDA_STOP else
