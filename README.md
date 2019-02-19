@@ -22,6 +22,7 @@ The following are included in the repository:
  - [I2C] Handle clock stretching
  - [I2C] Provide error signal out?
  - [I2C] Configurable speed
+ - [I2C] Update testbench for bug fix
  - [UART] Configurable baudrate
  - [UART] Fix testbench
 
