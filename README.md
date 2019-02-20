@@ -13,7 +13,7 @@ The following are included in the repository:
 
 ## Known Bugs
 
- - [I2C] `i2c_idle` signal doesn't seem to actually protect the bus. Transactions seem to overlap or "smash."
+ - [I2C] `i2c_idle` signal doesn't seem to actually protect the bus. Transactions appear to overlap or "smash."
  - [UART] First byte sent is always trash, afterwards fine
 
 ## TODO
