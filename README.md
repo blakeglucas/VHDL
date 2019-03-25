@@ -13,8 +13,7 @@ The following are included in the repository:
 
 ## Known Bugs
 
- - [I2C] `i2c_idle` signal doesn't seem to actually protect the bus. Transactions appear to be modified/overlap before finished...
- - [UART] First byte sent is always 0xC0, afterwards fine
+ - [I2C] `i2c_idle` signal doesn't seem to actually protect the bus. Transactions appear to be modified/overlap before finished.
 
 ## TODO
 
