@@ -18,11 +18,22 @@ end I2C_Master;
 
 architecture RTL of I2C_Master is
     constant clk_ticks: integer := 125;
+    constant h_clk_ticks: integer := clk_ticks / 2;
+
 	type sda_state_t is (SDA_IDLE, SDA_START, SDA_WRITE, SDA_READ, SDA_ACK, SDA_STOP);
     signal sda_state: sda_state_t := SDA_IDLE;
 	signal scl_state: std_logic := '1';
     signal sda_buf: std_logic := 'Z';
     signal tick_count: integer := 0;
+    
+    signal tx_count: integer := 0;
+    signal rx_count: integer := 0;
+    signal start_set: std_logic := '0';
+    signal addr_bit: std_logic := '0';
+    signal addr_buf: std_logic_vector(7 downto 0) := (others => '0');
+    signal did_nack: std_logic := 'U';
+    signal index: integer := 0;
+    signal rw: std_logic := '0';
 begin
 	scl_gen: process(clk) is
 	begin
@@ -36,22 +47,13 @@ begin
     end process;
     
     data_handler: process(clk) is
-        constant h_clk_ticks: integer := clk_ticks / 2;
-        variable tx_count: integer := 0;
-        variable rx_count: integer := 0;
-        variable start_set: std_logic := '0';
-        variable addr_bit: std_logic := '0';
-        variable addr_buf: std_logic_vector(7 downto 0) := (others => '0');
-        variable did_nack: std_logic := 'U';
-        variable index: integer := 0;
-        variable rw: std_logic := '0';
     begin
         if rising_edge(clk) then
             case sda_state is
                 when SDA_IDLE =>
                     idle <= '1';
-                    tx_count := 0;
-                    rx_count := 0;
+                    tx_count <= 0;
+                    rx_count <= 0;
                     if start = '1' then
                         sda_state <= SDA_START;
                         idle <= '0';
@@ -64,20 +66,20 @@ begin
                         if scl_state = '1' then
                             -- SET START BIT
                             sda_buf <= '0';
-                            start_set := '1';
+                            start_set <= '1';
                         elsif scl_state = '0' and start_set = '1' then
                             if tx_count = 0 and rx_count = 0 then
-                                rw := '0';
-                                addr_bit := '1';
+                                rw <= '0';
+                                addr_bit <= '1';
                                 sda_state <= SDA_WRITE;
-                                start_set := '0';
-                                index := 0;
+                                start_set <= '0';
+                                index <= 0;
                             elsif rx_count = 0 and rx_bytes > 0 and tx_count >= tx_bytes then
-                                rw := '1';
-                                addr_bit := '1';
+                                rw <= '1';
+                                addr_bit <= '1';
                                 sda_state <= SDA_WRITE;
-                                start_set := '0';
-                                index := 0;
+                                start_set <= '0';
+                                index <= 0;
                             end if;
                         end if;
                     end if;
@@ -85,7 +87,7 @@ begin
                     if index < 8 then
                         if addr_bit = '1' then
                             -- First packet -> address
-                            addr_buf := tx_data(0)(6 downto 0) & rw;
+                            addr_buf <= tx_data(0)(6 downto 0) & rw;
                             sda_buf <= addr_buf(7-index);
                         else
                             -- 0 bit is address
@@ -94,12 +96,12 @@ begin
                     end if;
                     if scl_state = '0' then
                         if index >= 8 then
-                            did_nack := 'U';
+                            did_nack <= 'U';
                             sda_state <= SDA_ACK;
                         end if;
                         if tick_count = 0 then
                             if index < 8 then
-                                index := index + 1;
+                                index <= index + 1;
                             end if;
                         end if;
                     end if;
@@ -107,7 +109,7 @@ begin
                     if index < 8 then
                         if tick_count = 0 and scl_state = '1' then
                             rx_data(rx_count)(7-index) <= sda;
-                            index := index + 1;
+                            index <= index + 1;
                         end if;
                     -- elsif sda = 'Z' then **STUCK IN READ** (for simulation)
                     elsif sda = '1' then
@@ -122,19 +124,19 @@ begin
                     end if;
                     -- Sample on rising edge
                     if tick_count = 0 and scl_state = '1' and rw = '0' then
-                            did_nack := sda;
+                            did_nack <= sda;
                     end if;
                     if tick_count = 0 and scl_state = '0' then
                         if rw = '0' then
                             if addr_bit = '1' then
                                 sda_state <= SDA_WRITE;
-                                index := 0;
-                                addr_bit := '0';
+                                index <= 0;
+                                addr_bit <= '0';
                             else
-                                tx_count := tx_count + 1;
+                                tx_count <= tx_count + 1;
                                 if tx_count < tx_bytes then
                                     sda_state <= SDA_WRITE;
-                                    index := 0;
+                                    index <= 0;
                                 else
                                     if rx_bytes > 0 then
                                         -- Restart condition
@@ -147,13 +149,13 @@ begin
                         elsif rw = '1' then
                             if addr_bit = '1' then
                                 sda_state <= SDA_READ;
-                                index := 0;
-                                addr_bit := '0';
+                                index <= 0;
+                                addr_bit <= '0';
                             else
-                                rx_count := rx_count + 1;
+                                rx_count <= rx_count + 1;
                                 if rx_count < rx_bytes then
                                     sda_state <= SDA_READ;
-                                    index := 0;
+                                    index <= 0;
                                 else
                                     sda_state <= SDA_STOP;
                                 end if;
