@@ -1,6 +1,6 @@
 # VHDL
 
-Various VHDL libraries and utilities I've written. All examples are specific to the NandLand GO Board (<https://www.nandland.com/goboard/index.html>), but the libraries should work for most FPGA's, depending on synthesis tool.
+Various VHDL libraries and utilities I've written. All examples are specific to the NandLand GO Board (<https://www.nandland.com/goboard/index.html>), but the libraries should work for most FPGA's, depending on synthesis tool. One exception: the SPI example was written on the Nexys 4 DDR board.
 
 ## Contents
 
@@ -8,6 +8,7 @@ The following are included in the repository:
 
  - I2C Library and Testbench
  - UART Library and Testbench
+ - Simple SPI Library
  - Various Utilities
  - Examples
 
@@ -25,10 +26,12 @@ The following are included in the repository:
  - [I2C] Update testbench for bug fix
  - [UART] Configurable baudrate
  - [UART] Fix testbench
+ - [SPI] Mode configuration
+ - [SPI] True duplex send/receive
+ - [SPI] Write testbench
 
 ## Future Libraries
 
- - SPI
  - USB, ideally, may not be possible yet
 
 ## Testing/Simulating
